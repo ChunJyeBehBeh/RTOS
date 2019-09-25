@@ -4,6 +4,7 @@
 #include <math.h>
 #include <ctype.h>
 /*Function declarations*/
+printf("Test Merge Branch\n");
 int get_n();
 void check_command_argument(int no_argument,char **argument_address);
 float get_mean(float* inputs, int array_size);
@@ -15,15 +16,15 @@ int main(int argc, char *argv[] )
 {
     int n, i;
     float *usr_input, mean, std;
-    
+
     if(argc>1){
-   		check_command_argument(argc,&argv[1]);		
+   		check_command_argument(argc,&argv[1]);
 	}
 	else{
         printf("By programm input\n");
         n = get_n(); //Get size of input for user
     }
-	
+
 	if(argc>1) //Check if there are more than 1 argument
 	{
 		char **p_to_arg = &argv[1];  //Point to argv[1] since argv[0] is program file name (Irrelevant)
@@ -35,15 +36,15 @@ int main(int argc, char *argv[] )
 					   n =atoi(*p_to_arg);					// Convert Character String to Integer [stdlib.h]
 					   if(n<=0) //Check if number of input size <0
 					   {
-						printf("You entered a negative value. Please enter a value more than 0.\n");  
+						printf("You entered a negative value. Please enter a value more than 0.\n");
 						exit(1);
 					   }
 					   else
 					   {
-					   		if(argc!=n+3)  //Offset 3 for ./program_name -n and size.   (./RTOS -n 3) are the 3 inputs. 
+					   		if(argc!=n+3)  //Offset 3 for ./program_name -n and size.   (./RTOS -n 3) are the 3 inputs.
 							{/*Check if input array size is the same as user defined input size*/
 								printf("Didn't input the correct number of data!\n");
-								exit(1); 
+								exit(1);
 							}
 							else
 							{
@@ -52,7 +53,7 @@ int main(int argc, char *argv[] )
 							}
 					   	}
 			case 'a' : printf("By programm input\n");
-					   n = get_n(); //Get size of input for user 
+					   n = get_n(); //Get size of input for user
 					   break;
 			default	 : printf("Invalid option \n");
 					   exit(1);
@@ -66,25 +67,25 @@ int main(int argc, char *argv[] )
 		/*If command line input. Run this script.
 		Input all user input array to *usr_input*/
     	int j=0;
-        char **p_to_arg = &argv[3];  
+        char **p_to_arg = &argv[3];
     	for(j=0;j<n;j++){
 			usr_input[j]=atof(*p_to_arg); //Convert to float
 			p_to_arg++;
 		}
 	}
 	else {
-		/*Script for user input*/ 
+		/*Script for user input*/
 		int value;
 	    for(i=0; i < n; i++){
 	        while(1){  //Get number of inputs from user
-	
+
 	        printf("Enter value of %d/%d: ", (i+1), n);
-	        if(scanf("%f", &usr_input[i]) == 1) //Check if input value from reader is a valid float type 
+	        if(scanf("%f", &usr_input[i]) == 1) //Check if input value from reader is a valid float type
 	        {
 	        	value=getchar();
 				if(value !='\n')
 				{
-					printf("Invalid Input end with alphabet.\n");		
+					printf("Invalid Input end with alphabet.\n");
 					exit(1);
 				}
 	            fseek(stdin,0,SEEK_END); //Clear io buffer once done
@@ -111,7 +112,7 @@ void check_command_argument(int no_argument,char **argument_address)
 	   {
 			printf("--- Here is the Documentation ---");
 			printf("-n {number of input} {first_number} {second_number} .... {n_number}.\n");
-			printf("-a user_input.\n"); 
+			printf("-a user_input.\n");
 			exit(1);
 		}
 		while(--no_argument && (*argument_address)[0]=='-')								// This while loop is to check whether has invalid arguments exist, such as -na -na -abc -3
@@ -141,9 +142,9 @@ void check_command_argument(int no_argument,char **argument_address)
 
 		if(strcmp((*argument_address),"-n")==0)
 		{
-			argument_address++;	
+			argument_address++;
 			int int_input;
-			float flt_input; 
+			float flt_input;
 			int counter_1,counter_2=0, interation=no_argument-1;
 			for(counter_1=0;counter_1<interation;counter_1++)
 			{
@@ -168,7 +169,7 @@ void check_command_argument(int no_argument,char **argument_address)
 					exit(1);
 				}
 				counter_2=0;
-				argument_address++;	
+				argument_address++;
 
 			}
 		}
@@ -186,7 +187,7 @@ int get_n()
         	value=getchar();
 			if(value !='\n')
 			{
-				printf("Invalid Input end with alphabet.\n");		
+				printf("Invalid Input end with alphabet.\n");
 				exit(1);
 			}
             fseek(stdin,0,SEEK_END);
@@ -213,7 +214,7 @@ float get_mean(float* inputs, int array_size){
     array_size: Int value of the size of array*/
     int i;
     float sum = 0;
- 
+
     for (i = 0; i < array_size; i++)
     {
         sum += inputs[i];
