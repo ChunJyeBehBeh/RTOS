@@ -4,7 +4,7 @@
 #include <math.h>
 #include <ctype.h>
 /*Function declarations*/
-printf("Test Merge Branch\n");
+printf("Test Test Test\n");
 int get_n();
 void check_command_argument(int no_argument,char **argument_address);
 float get_mean(float* inputs, int array_size);
