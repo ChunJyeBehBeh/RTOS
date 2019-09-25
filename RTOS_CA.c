@@ -58,10 +58,7 @@ int main(int argc, char *argv[] )
 					   exit(1);
 		}
 	}
-	else{
-		printf("By user input\n");
-		n = get_n();
-	}
+
     if((usr_input=(float*)malloc(n*sizeof(float))) == NULL){ //Memory allocation
         printf("Not enough memory. Use a smaller data size.");
     }
