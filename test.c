@@ -8,7 +8,7 @@ int main(){
 	{
 		value=getchar();
 //		printf("buffer --- %d\n",value);
-		if(value !=10)
+		if(value !='\n')
 		{
 			printf("Invalid Input end with alphabet.\n");			// try input: 32a
 		}

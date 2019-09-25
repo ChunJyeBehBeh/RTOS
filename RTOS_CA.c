@@ -5,44 +5,43 @@
 #include <ctype.h>
 /*Function declarations*/
 int get_n();
-void check_command_argument(int no_argument,char **argument_address;);
+void check_command_argument(int no_argument,char **argument_address);
 float get_mean(float* inputs, int array_size);
 float get_std(float* inputs, int array_size, float mean);
 void display(float* inputs, int array_size, float mean, float std);
 void print_lines(int array_size);
 
-int x;
-char **y;
-
 int main(int argc, char *argv[] )
 {
-	x = argc;
-	y=&argv[0];
     int n, i;
     float *usr_input, mean, std;
     
     if(argc>1){
-   		check_command_argument(argc,&argv[1]);
+   		check_command_argument(argc,&argv[1]);		
 	}
+	else{
+        printf("By programm input\n");
+        n = get_n(); //Get size of input for user
+    }
 	
-	if(argc>1)
+	if(argc>1) //Check if there are more than 1 argument
 	{
-		char **p_to_arg = &y[1];
-	
+		char **p_to_arg = &argv[1];  //Point to argv[1] since argv[0] is program file name (Irrelevant)
+	//Check for input method -n=Command line, -a=program input->Run full script
 		switch((*p_to_arg)[1])
 		{
-			case 'n' : printf("By command argument\n");
-					   p_to_arg++;
+			case 'n' : printf("By command argument\n"); //Check if -n = by command line
+					   p_to_arg++;   //Point to input array of numbers
 					   n =atoi(*p_to_arg);					// Convert Character String to Integer [stdlib.h]
-					   if(n<=0)
+					   if(n<=0) //Check if number of input size <0
 					   {
 						printf("You entered a negative value. Please enter a value more than 0.\n");  
 						exit(1);
 					   }
 					   else
 					   {
-					   		if(x!=n+3)
-							{
+					   		if(argc!=n+3)  //Offset 3 for ./program_name -n and size.   (./RTOS -n 3) are the 3 inputs. 
+							{/*Check if input array size is the same as user defined input size*/
 								printf("Didn't input the correct number of data!\n");
 								exit(1); 
 							}
@@ -59,26 +58,39 @@ int main(int argc, char *argv[] )
 					   exit(1);
 		}
 	}
-		
+	else{
+		printf("By user input\n");
+		n = get_n();
+	}
     if((usr_input=(float*)malloc(n*sizeof(float))) == NULL){ //Memory allocation
         printf("Not enough memory. Use a smaller data size.");
     }
-    if(argc>1){
+    if(argc>1 && strcmp(argv[1],"-n")==0){
+		/*If command line input. Run this script.
+		Input all user input array to *usr_input*/
     	int j=0;
-        char **p_to_arg = &y[3];
+        char **p_to_arg = &argv[3];  
     	for(j=0;j<n;j++){
-			usr_input[j]=atof(*p_to_arg);
+			usr_input[j]=atof(*p_to_arg); //Convert to float
 			p_to_arg++;
 		}
 	}
 	else {
+		/*Script for user input*/ 
+		int value;
 	    for(i=0; i < n; i++){
 	        while(1){  //Get number of inputs from user
 	
 	        printf("Enter value of %d/%d: ", (i+1), n);
 	        if(scanf("%f", &usr_input[i]) == 1) //Check if input value from reader is a valid float type 
 	        {
-	            fseek(stdin,0,SEEK_END);
+	        	value=getchar();
+				if(value !='\n')
+				{
+					printf("Invalid Input end with alphabet.\n");		
+					exit(1);
+				}
+	            fseek(stdin,0,SEEK_END); //Clear io buffer once done
 	            break; //Break out of while loop
 	        }
 	        //Error block to catch for non float value
@@ -168,12 +180,18 @@ void check_command_argument(int no_argument,char **argument_address)
 int get_n()
 {
     /*Macro to get size of input from user*/
-    int n;
+    int n,value;
     while(1){  //Get number of inputs from user
 
         printf("Input the number of data points to be computed: ");
         if(scanf("%d", &n) == 1 && n > 0) //Check if input value from reader is a valid float type and more than 0
         {
+        	value=getchar();
+			if(value !='\n')
+			{
+				printf("Invalid Input end with alphabet.\n");		
+				exit(1);
+			}
             fseek(stdin,0,SEEK_END);
             break; //Break out of while loop
         }
