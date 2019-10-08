@@ -3,38 +3,36 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-/*Function declarations*/
-printf("Test Test Master Branch\n");
 int get_n();
 void check_command_argument(int no_argument,char **argument_address);
 float get_mean(float* inputs, int array_size);
 float get_std(float* inputs, int array_size, float mean);
 void display(float* inputs, int array_size, float mean, float std);
 void print_lines(int array_size);
+#define min(x,y) ((x) <= (y)) ? (x) : (y)			// find the min number between two number 
 
 int main(int argc, char *argv[] )
-{
+{	
     int n, i;
     float *usr_input, mean, std;
-
-    if(argc>1){
+	if(argc==1 ){
+   		printf("By User input\n");
+        n = get_n(); //Get size of input for user
+	}
+    else if(argc>1 ){
    		check_command_argument(argc,&argv[1]);
 	}
-	else{
-        printf("By programm input\n");
-        n = get_n(); //Get size of input for user
-    }
 
 	if(argc>1) //Check if there are more than 1 argument
 	{
 		char **p_to_arg = &argv[1];  //Point to argv[1] since argv[0] is program file name (Irrelevant)
-	//Check for input method -n=Command line, -a=program input->Run full script
+		//Check for input method -n=Command line, -a=program input->Run full script
 		switch((*p_to_arg)[1])
 		{
-			case 'n' : printf("By command argument\n"); //Check if -n = by command line
-					   p_to_arg++;   //Point to input array of numbers
+			case 'n' : printf("By command argument\n"); 	//Check if -n = by command line
+					   p_to_arg++;   						//Point to input array of numbers
 					   n =atoi(*p_to_arg);					// Convert Character String to Integer [stdlib.h]
-					   if(n<=0) //Check if number of input size <0
+					   if(n<=0) 							//Check if number of input size <0
 					   {
 						printf("You entered a negative value. Please enter a value more than 0.\n");
 						exit(1);
@@ -48,14 +46,13 @@ int main(int argc, char *argv[] )
 							}
 							else
 							{
-							 	printf("n----- %d\n",n);
 				   				break;
 							}
 					   	}
-			case 'a' : printf("By programm input\n");
-					   n = get_n(); //Get size of input for user
+			case 'a' : printf("By User input\n");
+					   n = get_n(); 						//Get size of input for user
 					   break;
-			default	 : printf("Invalid option \n");
+			default	 : printf("Invalid option.\n");
 					   exit(1);
 		}
 	}
@@ -105,18 +102,20 @@ int main(int argc, char *argv[] )
 }
 void check_command_argument(int no_argument,char **argument_address)
 {
-	printf("checking argument\n");
 	if(no_argument>1)
 	{
 	   if(strcmp((*argument_address),"--help")==0)
 	   {
-			printf("--- Here is the Documentation ---");
-			printf("-n {number of input} {first_number} {second_number} .... {n_number}.\n");
-			printf("-a user_input.\n");
+			printf("--- Here is the Documentation ---\n");
+			printf("This program is to compute the mean and standard deviation of a given sample.\n");
+			printf("Run either one of the commands below in terminal.\n");
+			printf("(i)  RTOS_CA.exe -n {number of input} {first_number} {second_number} .... {n_number}.\n");
+			printf("(ii) RTOS_CA.exe -a user_input.\n");
 			exit(1);
 		}
-		while(--no_argument && (*argument_address)[0]=='-')								// This while loop is to check whether has invalid arguments exist, such as -na -na -abc -3
+		while(--no_argument && (*argument_address)[0]=='-')	// This while loop is to check whether has invalid arguments exist, such as -na -na -abc -3
 		{
+//			printf("checking argument\n");
 			if((*argument_address)[1]=='\0')
 			{
 				printf("Input - without option. Expected -n/-a argument pass in via command line.\n");
@@ -128,17 +127,23 @@ void check_command_argument(int no_argument,char **argument_address)
 				{
 					if((*argument_address)[2]=='\0')
 					{
-						printf("Valid optionnnn.\n");
+//						printf("Valid optionnnn.\n");
 						break;
 					}
 					else{
-						printf("Invalid optionnnn.\n");
+						printf("Invalid option. Valid Option is either a or n. Please see the documentation by execute command <RTOS_CA.exe --help> in the terminal.\n");
 						exit(1);
 					}
 				}
+				else{
+					printf("Invalid Option.\n");
+					exit(0);
+				}
 			}
-			argument_address++;															// if assume option as first argument, then no need iterate the whole argv[]
+			argument_address++;								// if assume option as first argument, then no need iterate the whole argv[]
 		}
+//		printf("Done checking argument\n");
+
 
 		if(strcmp((*argument_address),"-n")==0)
 		{
@@ -148,7 +153,6 @@ void check_command_argument(int no_argument,char **argument_address)
 			int counter_1,counter_2=0, interation=no_argument-1;
 			for(counter_1=0;counter_1<interation;counter_1++)
 			{
-				printf("Counter_1 %d.\n",counter_1);
 				if(counter_1 ==0){
 					while(isdigit((*argument_address)[counter_2])){
 					counter_2 ++;
@@ -162,10 +166,10 @@ void check_command_argument(int no_argument,char **argument_address)
 				}
 //				printf("In buffer is %c \n",(*argument_address)[counter_2]);
 				if(((*argument_address)[counter_2])=='\0'){
-					printf("Fantastic Amazing Input a correct value for me. Make easy life for a programmer.\n");
+					break;
 				}
 				else{
-					printf("Integer or Flot, bro.\n");
+					printf("Please enter a Integer or Float Number.\n");
 					exit(1);
 				}
 				counter_2=0;
@@ -196,7 +200,7 @@ int get_n()
         // Error block
         else if (n <= 0)
         {
-            printf("You entered a negative value. Please enter a value more than 0.\n");  //Check for negative value
+            printf("You entered a negative value or invalid number. Please enter a value more than 0.\n");  //Check for negative value
             fseek(stdin,0,SEEK_END);
         }
         else{
@@ -265,7 +269,8 @@ void print_lines(int array_size){
     -----------------------------------------------------------------
     array_size: int of size of user input*/
     int i;
-    for (i = 0; i < array_size; i++)
+    int a = min(array_size,12);				// choose the minimum number to avoid print too much line
+    for (i = 0; i < a; i++)
     {
         printf("------------------");
     }
