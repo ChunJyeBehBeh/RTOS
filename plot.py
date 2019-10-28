@@ -16,8 +16,9 @@ def generate_wave(interval):
 
 def plot():
     arr,x = generate_wave(50)
-    plt.title('sine wave')
+    plt.title('sine wave + cosine wave')
     plt.scatter(x, arr)
+    plt.scatter(x, [-i+2 for i in arr])
     plt.show()
     
 
