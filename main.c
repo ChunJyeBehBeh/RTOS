@@ -10,6 +10,7 @@ Reference: https://blog.csdn.net/zqixiao_09/article/details/50298693
 #include <hw/inout.h>
 #include <sys/neutrino.h>
 #include <sys/mman.h>
+#include <math.h>
 
 /* pt_args.c */
 #include <pthread.h>
@@ -41,111 +42,44 @@ Reference: https://blog.csdn.net/zqixiao_09/article/details/50298693
 #define DA_FIFOCLR			iobase[4] + 2				// Badr4 + 2
 
 #define	DEBUG						1
-#define NUM_THREADS					2
+#define NUM_THREADS					3
 
+/* Global Variable */
 int badr[5];											// PCI 2.2 assigns 6 IO base addresses
+uintptr_t iobase[6];
 uintptr_t dio_in;
+uint16_t adc_in;
 
 struct thread_data
 {
-	int	thread_id;
+	int thread_id;
 	//  int  sum;
 	//  char *message;
 };
 
 struct thread_data thread_data_array[NUM_THREADS];
-/* Function */
-void *ReadSwitchStatus(void *arg){
-  
-// ****************************************************************************
-// Digital Port Functions
-// ****************************************************************************																																	
 
-  printf("\nDIO Functions\n");	
-  int taskid_1;
-  struct thread_data *my_data_1;
-
-  sleep(1);
-  my_data_1 = (struct thread_data *) threadarg_1;
-  taskid_1 = my_data_1->thread_id;		
-  printf("Thread %d", taskid_1);	
-
-  out8(DIO_CTLREG,0x90);					// Port A : Input,  Port B : Output,  
-											// Port C (upper | lower) : Output | Output			
-  
-  dio_in=in8(DIO_PORTA); 					// Read Port A	
-  // printf("Port A : %02x\n", dio_in);		// Beh: <- switch status																												
-                                              
-  out8(DIO_PORTB, dio_in);					// output Port A value -> write to Port B 		
-						
-}
-
-void *PrintHello(void *arg)
-{
-	int taskid_2;
-	struct thread_data *my_data_2;
-
-	sleep(1);
-	my_data_2 = (struct thread_data *) threadarg_2;
-	taskid = my_data_2->thread_id;
-	printf("Thread %d -> Port A : %02x\n", taskid_2, dio_in);
-}
-
-void *Out_wave(voide *arg) {
-	//**********************************************************************************************
-	// Setup waveform array
-	//**********************************************************************************************
-
-	delta = (2.0*3.142) / 50.0;					// increment
-	if (dio_in == 0) {
-		for (i = 0; i<50; i++) {
-			dummy = ((sinf((float)(i*delta))) + 1.0) * 0x8000;
-			data[i] = (unsigned)dummy;			// add offset +  scale
-		}
-	}
-	else{
-		for (i = 0; i<50; i++) {
-			dummy = ((cosf((float)(i*delta))) + 1.0) * 0x8000;
-			data[i] = (unsigned)dummy;			// add offset +  scale
-		}
-	}
-
-	//*********************************************************************************************
-	// Output wave
-	//*********************************************************************************************
-
-	while (1) {
-		for (i = 0; i<50; i++) {
-			out16(DA_CTLREG, 0x0a23);			// DA Enable, #0, #1, SW 5V unipolar		2/6
-			out16(DA_FIFOCLR, 0);					// Clear DA FIFO  buffer
-			out16(DA_Data, (short)data[i]);
-			out16(DA_CTLREG, 0x0a43);			// DA Enable, #1, #1, SW 5V unipolar		2/6
-			out16(DA_FIFOCLR, 0);					// Clear DA FIFO  buffer
-			out16(DA_Data, (short)data[i]);
-		}
-	}
-}
-/* Function */
-
+/* Function Declaration */
+void *ReadSwitchStatus(void *arg);
+void *PrintHello(void *arg);
+void *Out_wave(void *arg);
 
 int main() {
 struct pci_dev_info info;
 void *hdl;
-
-uintptr_t iobase[6];
-//uintptr_t dio_in;					-> global variable
-uint16_t adc_in;
 	
-unsigned int i,count;
+unsigned int i,count;		
 unsigned short chan;
 
-int t,rc	;
-pthread_t threads[NUM_THREADS];	
+int t,rc;
 
-printf("\fDemonstration for CA 2\n\n");
+pthread_t threads[NUM_THREADS];	
+pthread_attr_t* pthread_attr;
+pthread_attr_init(pthread_attr);
+pthread_attr_setschedpolicy(pthread_attr, SCHED_RR);
 
 memset(&info,0,sizeof(info));				// memset() is used to fill a block of memory with a particular value.
-											// https://www.geeksforgeeks.org/memset-c-example/ 
+						 	// https://www.geeksforgeeks.org/memset-c-example/ 
 											
 if(pci_attach(0)<0) {						// Connect to the PCI server 
   perror("pci_attach");
@@ -168,7 +102,7 @@ for(i=0;i<6;i++) {
         PCI_IS_MEM(info.CpuBaseAddress[i]) ?  (int)PCI_MEM_ADDR(info.CpuBaseAddress[i]) : 
         (int)PCI_IO_ADDR(info.CpuBaseAddress[i]),info.BaseAddressSize[i], 
         PCI_IS_MEM(info.CpuBaseAddress[i]) ? "MEM" : "IO");		
-    }										// Test whether the address is a memory address.
+    }// Test whether the address is a memory address.
 }  
     														
 printf("IRQ %d\n",info.Irq); 				// IRQ: Interrupt number (output)
@@ -212,14 +146,19 @@ for(t=0;t<NUM_THREADS;t++) {
   Thread No.
   t = 0 : Read Switch Status
   t = 1 : Print Switch Status
+  t = 2 : Output waveform
   */
   if(t==0){
     /* Read Switch Status */
-    rc = pthread_create(&threads[t], NULL, (void *)ReadSwitchStatus, (void *) 
+    rc = pthread_create(&threads[t], pthread_attr, (void *)ReadSwitchStatus, (void *) 
           &thread_data_array[t]);
   }
+  else if(t==1){
+    rc = pthread_create(&threads[t], pthread_attr, (void *)PrintHello, (void *)
+       &thread_data_array[t]);
+  }
   else{
-    rc = pthread_create(&threads[t], NULL, (void *)PrintHello, (void *)
+    rc = pthread_create(&threads[t], pthread_attr, (void *)Out_wave, (void *)
        &thread_data_array[t]);
   }
   
@@ -229,6 +168,99 @@ for(t=0;t<NUM_THREADS;t++) {
     }
   }
   
-
-
+  pthread_attr_destroy(pthread_attr);
+  
+  while(1){
+  }
 }
+
+;
+/* Function */
+void *PrintHello(void *arg)
+{
+	int taskid_2;
+	struct thread_data *my_data_2;
+
+	sleep(1);
+	my_data_2 = (struct thread_data *) arg;
+	taskid_2 = my_data_2->thread_id;
+	while(1){
+	//printf("Thread %d -> Port A : %x\n", taskid_2, dio_in-0xF0);
+	}
+}
+
+void *ReadSwitchStatus(void *arg){
+	  int taskid_1;
+  struct thread_data *my_data_1;
+
+  sleep(1);
+  my_data_1 = (struct thread_data *) arg;
+  taskid_1 = my_data_1->thread_id;		
+  while(1){
+ //printf("Thread %d (Read Switch Status)\n", taskid_1);	
+
+  out8(DIO_CTLREG,0x90);					// Port A : Input,  Port B : Output,  
+														// Port C (upper | lower) : Output | Output			
+  
+  dio_in=in8(DIO_PORTA); 					// Read Port A	
+  //printf("Port A : %02x\n", dio_in);	// Beh: <- switch status																												
+                                              
+  out8(DIO_PORTB, dio_in);					// output Port A value -> write to Port B 		
+  }					
+}
+
+void *Out_wave(void *arg) {
+	//**********************************************************************************************
+	// Setup waveform array
+	//**********************************************************************************************
+	
+	unsigned int i,count;
+	float delta,dummy;
+	unsigned int data[50];
+	sleep(1.0);
+	while(1){
+	delta = (2.0*3.142) / 50.0;					// increment
+
+	if (((int) dio_in)-240 == 0) {
+		//printf("Sine Wave\n");
+		for (i = 0; i<50; i++) {
+			dummy= ((sinf((float)(i*delta))) + 1.0) * 0x7000 ;
+  			data[i]= (unsigned) dummy;			// add offset +  scale
+  			//printf("%f\n", dummy);
+
+		}
+	}
+	else{
+		//printf("Cosine Wave\n");
+		for (i = 0; i<50; i++) {
+			//dummy = ((sinf((float)(i*delta)+1.56)) + 1.0) * 0x7000;
+			//printf("%f\n", dummy);
+			//data[i] = (unsigned)dummy;			// add offset +  scale
+			if(i<25){
+	data[i]= 2 * 0x8000 -1;  
+  }
+  else{
+  	data[i]=0;
+  }
+		}
+	}
+	//printf(" ");
+	
+
+	//*********************************************************************************************
+	// Output wave
+	//*********************************************************************************************
+
+	//while (1) {
+		for (i = 0; i<50; i++) {
+			out16(DA_CTLREG, 0x0a23);			// DA Enable, #0, #1, SW 5V unipolar		2/6
+			out16(DA_FIFOCLR, 0);					// Clear DA FIFO  buffer
+			out16(DA_Data, (short)data[i]);
+			out16(DA_CTLREG, 0x0a43);			// DA Enable, #1, #1, SW 5V unipolar		2/6
+			out16(DA_FIFOCLR, 0);					// Clear DA FIFO  buffer
+			out16(DA_Data, (short)data[i]);			
+		}
+	//	}
+	}
+}
+/* Function */
