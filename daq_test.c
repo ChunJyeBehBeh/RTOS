@@ -131,10 +131,11 @@ while(1)
 	//*****************************************************************************																																	
 	
 		printf("\nDIO Functions\n");													  										
-		out8(DIO_CTLREG,0x90);					// Port A : Input,  Port B : Output,  Port C (upper | lower) : Output | Output			
+		out8(DIO_CTLREG,0x90);					// Port A : Input,  Port B : Output,  
+												// Port C (upper | lower) : Output | Output			
 		
 		dio_in=in8(DIO_PORTA); 					// Read Port A	
-		printf("Port A : %02x\n", dio_in);																												
+		printf("Port A : %02x\n", dio_in);		// Beh: <- switch status																												
 																								
 		out8(DIO_PORTB, dio_in);				// output Port A value -> write to Port B 		
 	
