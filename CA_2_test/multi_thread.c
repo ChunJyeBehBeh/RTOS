@@ -44,7 +44,7 @@ void *Print(void *arg){
     sleep(1);
     my_data_2 = (struct thread_data *) arg;
     taskid_2 = my_data_2->thread_id;
-    sleep(1);
+    //sleep(1);
     printf("Thread %d ", taskid_2);	
     printf("Status: %d\n",status);
 }
@@ -76,7 +76,6 @@ int main()
     
     sleep(10);
     printf("Exit the code");
-
 
     return 0;
 }
