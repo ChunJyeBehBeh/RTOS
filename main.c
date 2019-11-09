@@ -41,7 +41,7 @@ Reference: https://blog.csdn.net/zqixiao_09/article/details/50298693
 #define DA_Data				iobase[4] + 0				// Badr4 + 0
 #define DA_FIFOCLR		iobase[4] + 2				// Badr4 + 2
 
-#define	DEBUG								1
+#define	DEBUG						1
 #define NUM_THREADS					3
 
 /* Global Variable */
@@ -49,6 +49,7 @@ int badr[5];											// PCI 2.2 assigns 6 IO base addresses
 uintptr_t iobase[6];
 uintptr_t dio_in;
 uint16_t adc_in;
+pthread_mutex_t mutex  = PTHREAD_MUTEX_INITIALIZER; //Initialise mutex using initializer macro
 
 struct thread_data
 {
@@ -74,7 +75,7 @@ int main() {
 	pthread_t threads[NUM_THREADS];	
 	pthread_attr_t* pthread_attr;
 	pthread_attr_init(pthread_attr);
-	pthread_attr_setschedpolicy(pthread_attr, SCHED_RR);
+	pthread_attr_setschedpolicy(pthread_attr, SCHED_RR);//Round-robin policy scheduling
 
 	memset(&info,0,sizeof(info));				// memset() is used to fill a block of memory with a particular value.
 						 													// https://www.geeksforgeeks.org/memset-c-example/ 
@@ -149,7 +150,7 @@ int main() {
 		if(t==0){
 			/* Read Switch Status */
 			rc = pthread_create(&threads[t], pthread_attr, (void *)ReadSwitchStatus, (void *) 
-						&thread_data_array[t]);
+						&thread_data_array[t]); //thread_data_array[t] passes thread id as argument to function
 		}
 		else if(t==1){
 			rc = pthread_create(&threads[t], pthread_attr, (void *)PrintHello, (void *)
@@ -169,6 +170,8 @@ int main() {
 		pthread_attr_destroy(pthread_attr);
 		
 		while(1){
+
+
 		}
 }
 
@@ -176,6 +179,7 @@ int main() {
 /* Function */
 void *PrintHello(void *arg)
 {
+	pthread_mutex_lock(&mutex); //Lock mutex to run function
 	int taskid_2;
 	struct thread_data *my_data_2;
 
@@ -185,26 +189,32 @@ void *PrintHello(void *arg)
 	while(1){
 	//printf("Thread %d -> Port A : %x\n", taskid_2, dio_in-0xF0);
 	}
+	pthread_mutex_unlock(&mutex);
+	sleep(1);   //Unlock mutex and sleep for 1 sec.
 }
 
 void *ReadSwitchStatus(void *arg){
-	  int taskid_1;
-  struct thread_data *my_data_1;
+	int taskid_1;
+	struct thread_data *my_data_1;
 
-  sleep(1);
-  my_data_1 = (struct thread_data *) arg;
-  taskid_1 = my_data_1->thread_id;		
-  while(1){
- //printf("Thread %d (Read Switch Status)\n", taskid_1);	
+  	sleep(1);
+	pthread_mutex_lock(&mutex); //Lock mutex
+  	my_data_1 = (struct thread_data *) arg;
+ 	taskid_1 = my_data_1->thread_id;		
+  	while(1){
+ 	//printf("Thread %d (Read Switch Status)\n", taskid_1);	
 
-  out8(DIO_CTLREG,0x90);					// Port A : Input,  Port B : Output,  
-														// Port C (upper | lower) : Output | Output			
+  	out8(DIO_CTLREG,0x90);					// Port A : Input,  Port B : Output,  
+											// Port C (upper | lower) : Output | Output			
   
-  dio_in=in8(DIO_PORTA); 					// Read Port A	
-  //printf("Port A : %02x\n", dio_in);	// Beh: <- switch status																												
+  	dio_in=in8(DIO_PORTA); 					// Read Port A	
+  	//printf("Port A : %02x\n", dio_in);	// Beh: <- switch status																												
                                               
-  out8(DIO_PORTB, dio_in);					// output Port A value -> write to Port B 		
-  }					
+  	out8(DIO_PORTB, dio_in);				// output Port A value -> write to Port B 		
+  }	
+  pthread_mutex_unlock(&mutex); 			//unlock mutex
+  sleep(1);
+
 }
 
 void *Out_wave(void *arg) {
@@ -216,6 +226,7 @@ void *Out_wave(void *arg) {
 	float delta,dummy;
 	unsigned int data[50];
 	sleep(1.0);
+	pthread_mutex_lock(&mutex);
 	while(1){
 		delta = (2.0*3.142) / 50.0;					// increment
 
@@ -251,5 +262,6 @@ void *Out_wave(void *arg) {
 			out16(DA_Data, (short)data[i]);			
 		}
 	}
+	pthread_mutex_unlock(&mutex);
 }
 /* Function */
