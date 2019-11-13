@@ -64,4 +64,3 @@ elif(i>=interval/4 and i<=3*interval/4):
 else:
     dummy = (i*delta+1.0) - 5.0
 
-'''

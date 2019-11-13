@@ -61,6 +61,12 @@ struct waveform_properties{
     int amplitude;
 };
 
+struct waveform_properties{
+    int type_wave;                  // 0: Sine Wave     1: Square Wave      2: Triangular Wave      3: Sawtooth Wave
+    int number_of_points;
+    int amplitude;
+};
+
 struct thread_data thread_data_array[NUM_THREADS];
 
 /* Function Declaration */
@@ -178,7 +184,6 @@ int main() {
 		}
 }
 
-//;
 /* Function */
 int generate_waveform(struct waveform_properties arg){
     number_of_points = arg.number_of_points;
@@ -244,6 +249,7 @@ int generate_waveform(struct waveform_properties arg){
     }
 
     return data;
+
 }
 void *PrintHello(void *arg)
 {
