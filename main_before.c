@@ -23,7 +23,7 @@ Reference: https://blog.csdn.net/zqixiao_09/article/details/50298693
 #define DA_CTLREG			iobase[1] + 8				// Badr1 + 8
 
 #define AD_DATA				iobase[2] + 0				// Badr2 + 0
-#define AD_FIFOCLR		iobase[2] + 2				// Badr2 + 2
+#define AD_FIFOCLR			iobase[2] + 2				// Badr2 + 2
 
 #define	TIMER0				iobase[3] + 0				// Badr3 + 0
 #define	TIMER1				iobase[3] + 1				// Badr3 + 1
@@ -32,16 +32,16 @@ Reference: https://blog.csdn.net/zqixiao_09/article/details/50298693
 #define	DIO_PORTA			iobase[3] + 4				// Badr3 + 4
 #define	DIO_PORTB			iobase[3] + 5				// Badr3 + 5
 #define	DIO_PORTC			iobase[3] + 6				// Badr3 + 6
-#define	DIO_CTLREG		iobase[3] + 7				// Badr3 + 7
+#define	DIO_CTLREG			iobase[3] + 7				// Badr3 + 7
 #define	PACER1				iobase[3] + 8				// Badr3 + 8
 #define	PACER2				iobase[3] + 9				// Badr3 + 9
 #define	PACER3				iobase[3] + a				// Badr3 + a
 #define	PACERCTL			iobase[3] + b				// Badr3 + b
 
 #define DA_Data				iobase[4] + 0				// Badr4 + 0
-#define DA_FIFOCLR		iobase[4] + 2				// Badr4 + 2
+#define DA_FIFOCLR			iobase[4] + 2				// Badr4 + 2
 
-#define	DEBUG								1
+#define	DEBUG						1
 #define NUM_THREADS					3
 
 /* Global Variable */
@@ -56,8 +56,8 @@ struct thread_data
 };
 
 struct waveform_properties{
-    int type_wave;                  // 0: Sine Wave     1: Square Wave      2: Triangular Wave      3: Sawtooth Wave
-    int number_of_points;
+    int type_wave;                  // 0: Sine Wave     	   1: Square Wave      
+    int number_of_points;			// 2: Triangular Wave      3: Sawtooth Wave
     int amplitude;
 };
 
@@ -67,6 +67,7 @@ struct thread_data thread_data_array[NUM_THREADS];
 void *ReadSwitchStatus(void *arg);
 void *PrintHello(void *arg);
 void *Out_wave(void *arg);
+int generate_waveform(struct waveform_properties arg)；
 
 int main() {
 	struct pci_dev_info info;
@@ -83,7 +84,7 @@ int main() {
 	pthread_attr_setschedpolicy(&pthread_attr, SCHED_RR);
 
 	memset(&info,0,sizeof(info));				// memset() is used to fill a block of memory with a particular value.
-						 													// https://www.geeksforgeeks.org/memset-c-example/
+						 						// https://www.geeksforgeeks.org/memset-c-example/
 
 	if(pci_attach(0)<0) {									// Connect to the PCI server
 		perror("pci_attach");
@@ -101,12 +102,12 @@ int main() {
 		}
 
 	for(i=0;i<6;i++) {
-			if(info.BaseAddressSize[i]>0){
-				printf("Aperture %d  Base 0x%x Length %d Type %s\n", i,
-					PCI_IS_MEM(info.CpuBaseAddress[i]) ?  (int)PCI_MEM_ADDR(info.CpuBaseAddress[i]) :
-					(int)PCI_IO_ADDR(info.CpuBaseAddress[i]),info.BaseAddressSize[i],
-					PCI_IS_MEM(info.CpuBaseAddress[i]) ? "MEM" : "IO");
-			}// Test whether the address is a memory address.
+		if(info.BaseAddressSize[i]>0){
+			printf("Aperture %d  Base 0x%x Length %d Type %s\n", i,
+				PCI_IS_MEM(info.CpuBaseAddress[i]) ?  (int)PCI_MEM_ADDR(info.CpuBaseAddress[i]) :
+				(int)PCI_IO_ADDR(info.CpuBaseAddress[i]),info.BaseAddressSize[i],
+				PCI_IS_MEM(info.CpuBaseAddress[i]) ? "MEM" : "IO");
+		}// Test whether the address is a memory address.
 	}
 
 	printf("IRQ %d\n",info.Irq); 				// IRQ: Interrupt number (output)
@@ -178,7 +179,6 @@ int main() {
 		}
 }
 
-//;
 /* Function */
 int generate_waveform(struct waveform_properties arg){
     number_of_points = arg.number_of_points;
