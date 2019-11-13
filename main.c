@@ -61,6 +61,12 @@ struct waveform_properties{
     int amplitude;
 };
 
+struct waveform_properties{
+    int type_wave;                  // 0: Sine Wave     1: Square Wave      2: Triangular Wave      3: Sawtooth Wave
+    int number_of_points;
+    int amplitude;
+};
+
 struct thread_data thread_data_array[NUM_THREADS];
 
 /* Function Declaration */
@@ -179,12 +185,21 @@ int main() {
 }
 
 //;
+<<<<<<< HEAD
 /* Function */
 int generate_waveform(struct waveform_properties arg){
     number_of_points = arg.number_of_points;
     type_wave = arg.type_wave;
     amplitude = arg.amplitude;
 
+=======
+/* Function */
+int generate_waveform(struct waveform_properties arg){
+    number_of_points = arg.number_of_points;
+    type_wave = arg.type_wave;
+    amplitude = arg.amplitude;
+
+>>>>>>> de76f3dacf02a4ecbcc6f59448b10a078eabda25
     unsigned int i,count;
 	float delta,dummy;
 	unsigned int data[number_of_points];
@@ -209,6 +224,7 @@ int generate_waveform(struct waveform_properties arg){
                 data[i]=0;
             }
     }
+<<<<<<< HEAD
 }
     else if(type_wave == 2){
         printf("Triangular Wave\n");
@@ -244,6 +260,43 @@ int generate_waveform(struct waveform_properties arg){
     }
 
     return data;
+=======
+}
+    else if(type_wave == 2){
+        printf("Triangular Wave\n");
+        for(i=0;i<int(number_of_points/4);i++){
+            dummy = (i*delta)*amplitude;
+            data[i]= (unsigned) dummy;
+        }
+        for(i=int(number_of_points/4);i<int(3*number_of_points/4);i++){
+            dummy = data[i-1] - delta*amplitude;
+            data[i]= (unsigned) dummy;
+        }
+        for(i=int(3*number_of_points/4);i<int(number_of_points);i++){
+            dummy = data[i-1] + delta*amplitude;
+            data[i]= (unsigned) dummy;
+        }
+}
+    else{
+        printf("Sawtooth Wave\n");
+        for(i=0;i<int(number_of_points/4);i++){
+            dummy = (i*delta)*amplitude;
+            data[i]= (unsigned) dummy;
+        }
+        float gap_1 = data[number_of_points/4-1];
+        for(i=int(number_of_points/4);i<int(3*number_of_points/4);i++){
+            ummy = -amplitude*gap_1+ (i*delta)*amplitude ;
+            data[i]= (unsigned) dummy;
+        }
+        float gap_2 = -amplitude*gap_1+ ((3*interval/4)*delta)*amplitude;
+        for(i=int(3*number_of_points/4);i<int(number_of_points);i++){
+            dummy = -amplitude*gap_1+ (i*delta)*amplitude - gap_2;
+            data[i]= (unsigned) dummy;
+        }
+    }
+
+    return data;
+>>>>>>> de76f3dacf02a4ecbcc6f59448b10a078eabda25
 }
 void *PrintHello(void *arg)
 {
